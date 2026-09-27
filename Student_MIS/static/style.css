@@ -1,0 +1,10 @@
+body {
+    background-color: #f0f2f5;
+    /* Light grey background */
+}
+
+.navbar-brand {
+    font-weight: bold;
+    color: #ffcc00 !important;
+    /* Gold text for the brand */
+}

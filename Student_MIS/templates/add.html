@@ -1,0 +1,61 @@
+{% extends 'base.html' %}
+{% block title %}Add Student{% endblock %}
+{% block page_title %}Add New Student{% endblock %}
+{% block content %}
+<div style="max-width:600px; margin:0 auto;">
+    <div style="margin-bottom:20px;">
+        <h1 style="font-size:1.3rem; font-weight:700; margin-bottom:4px;">New Student Entry</h1>
+        <p style="color:var(--muted); font-size:0.82rem;">Student will be auto-categorized based on marks & attendance</p>
+    </div>
+
+    <div class="card" style="padding:28px;">
+        <form method="POST">
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:16px;">
+                <div style="grid-column:1/-1;">
+                    <label class="form-label-custom">Full Name *</label>
+                    <input type="text" name="name" class="form-input" placeholder="e.g. Priya Sharma" required>
+                </div>
+                <div>
+                    <label class="form-label-custom">Marks (0–100) *</label>
+                    <input type="number" name="marks" class="form-input" min="0" max="100" step="0.1" placeholder="e.g. 78" required>
+                </div>
+                <div>
+                    <label class="form-label-custom">Attendance % (0–100) *</label>
+                    <input type="number" name="attendance" class="form-input" min="0" max="100" step="0.1" placeholder="e.g. 85" required>
+                </div>
+                <div>
+                    <label class="form-label-custom">Email</label>
+                    <input type="email" name="email" class="form-input" placeholder="student@example.com">
+                </div>
+                <div>
+                    <label class="form-label-custom">Phone</label>
+                    <input type="text" name="phone" class="form-input" placeholder="+91 00000 00000">
+                </div>
+                <div style="grid-column:1/-1;">
+                    <label class="form-label-custom">Enroll in Course (ERP)</label>
+                    <select name="course_id" class="form-input">
+                        <option value="">— Select course (optional) —</option>
+                        {% for c in courses %}
+                        <option value="{{ c.id }}">{{ c.code }} — {{ c.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+
+            <!-- Categorization preview box -->
+            <div style="background:var(--surface2); border:1px solid var(--border); border-radius:10px; padding:14px; margin-bottom:20px; font-size:0.8rem; color:var(--muted);">
+                <b style="color:var(--text);">Auto-Categorization Rules</b><br>
+                <span style="color:var(--success);">● Excellent</span> — Marks ≥ 75% AND Attendance ≥ 80%<br>
+                <span style="color:var(--warning);">● Average</span> — Marks ≥ 50% AND Attendance ≥ 60%<br>
+                <span style="color:var(--danger);">● At Risk</span> — Below Average thresholds<br>
+                <span style="color:var(--muted);">● Invalid</span> — Any value outside 0–100 range
+            </div>
+
+            <div style="display:flex; gap:10px;">
+                <button type="submit" class="btn-accent"><i class="bi bi-check-lg me-1"></i>Categorize & Save</button>
+                <a href="{{ url_for('students_list') }}" class="btn-ghost">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

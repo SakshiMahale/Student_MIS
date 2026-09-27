@@ -1,0 +1,103 @@
+{% extends 'base.html' %}
+{% block title %}ESS Dashboard{% endblock %}
+{% block page_title %}Executive Support System (ESS){% endblock %}
+{% block content %}
+<div style="margin-bottom:24px;">
+    <h1 style="font-size:1.4rem; font-weight:700; margin-bottom:4px;">ESS Dashboard</h1>
+    <p style="color:var(--muted); font-size:0.82rem;">High-level KPIs & analytics for executive decision-making</p>
+</div>
+
+<!-- KPIs -->
+<div class="kpi-grid">
+    <div class="kpi-tile blue">
+        <div class="kpi-label">Total Students</div>
+        <div class="kpi-value">{{ stats.total }}</div>
+        <div class="kpi-sub">Active enrolments</div>
+    </div>
+    <div class="kpi-tile green">
+        <div class="kpi-label">Excellent</div>
+        <div class="kpi-value" style="color:var(--success);">{{ stats.excellent }}</div>
+        <div class="kpi-sub">{{ "%.0f" | format(stats.excellent / stats.total * 100 if stats.total else 0) }}% of cohort</div>
+    </div>
+    <div class="kpi-tile yellow">
+        <div class="kpi-label">Average</div>
+        <div class="kpi-value" style="color:var(--warning);">{{ stats.average }}</div>
+        <div class="kpi-sub">On track</div>
+    </div>
+    <div class="kpi-tile red">
+        <div class="kpi-label">At Risk</div>
+        <div class="kpi-value" style="color:var(--danger);">{{ stats.at_risk }}</div>
+        <div class="kpi-sub">Needs intervention</div>
+    </div>
+    <div class="kpi-tile blue">
+        <div class="kpi-label">Avg Marks</div>
+        <div class="kpi-value" style="font-size:1.6rem;">{{ stats.avg_marks }}%</div>
+        <div class="kpi-sub">Cohort average</div>
+    </div>
+    <div class="kpi-tile green">
+        <div class="kpi-label">Pass Rate</div>
+        <div class="kpi-value" style="font-size:1.6rem; color:var(--accent2);">{{ stats.pass_rate }}%</div>
+        <div class="kpi-sub">Excellent + Average</div>
+    </div>
+</div>
+
+<!-- Charts row -->
+<div style="display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:24px;">
+    <div class="card" style="padding:20px;">
+        <div class="card-header-custom" style="padding:0 0 14px;"><i class="bi bi-pie-chart" style="color:var(--accent);"></i> Category Distribution</div>
+        <canvas id="catChart" height="200"></canvas>
+    </div>
+    <div class="card" style="padding:20px;">
+        <div class="card-header-custom" style="padding:0 0 14px;"><i class="bi bi-bar-chart" style="color:var(--accent2);"></i> Marks Distribution</div>
+        <canvas id="marksChart" height="200"></canvas>
+    </div>
+</div>
+
+<!-- Audit Log -->
+<div class="card">
+    <div class="card-header-custom"><i class="bi bi-journal-text" style="color:var(--muted);"></i> Recent Activity Log</div>
+    <table class="mis-table">
+        <thead><tr><th>Timestamp</th><th>Module</th><th>Action</th></tr></thead>
+        <tbody>
+        {% for log in recent_logs %}
+        <tr>
+            <td style="font-family:'JetBrains Mono',monospace; font-size:0.75rem; color:var(--muted);">{{ log.timestamp.strftime('%d %b %Y %H:%M') }}</td>
+            <td>
+                <span class="module-chip chip-{{ log.module | lower | replace(' ','') }}">{{ log.module }}</span>
+            </td>
+            <td style="font-size:0.83rem;">{{ log.action }}</td>
+        </tr>
+        {% else %}
+        <tr><td colspan="3" style="text-align:center; color:var(--muted); padding:30px;">No activity yet.</td></tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}
+{% block scripts %}
+<script>
+const catData   = {{ chart_data | safe }};
+const buckets   = {{ buckets | safe }};
+
+Chart.defaults.color = '#7a7f99';
+Chart.defaults.font.family = "'Space Grotesk', sans-serif";
+
+new Chart(document.getElementById('catChart'), {
+    type: 'doughnut',
+    data: { labels: catData.labels, datasets: [{ data: catData.values, backgroundColor: catData.colors, borderWidth: 0, hoverOffset: 6 }] },
+    options: { plugins: { legend: { position: 'bottom', labels: { padding: 16, font: {size:12} } } }, cutout: '65%' }
+});
+
+new Chart(document.getElementById('marksChart'), {
+    type: 'bar',
+    data: {
+        labels: Object.keys(buckets),
+        datasets: [{ data: Object.values(buckets),
+            backgroundColor: ['#ff5b5b', '#ffb236', '#6c63ff', '#10b981'],
+            borderRadius: 6, borderWidth: 0 }]
+    },
+    options: { plugins: { legend: { display: false } },
+               scales: { x: { grid: { color: '#252a3a' } }, y: { grid: { color: '#252a3a' }, ticks: { stepSize: 1 } } } }
+});
+</script>
+{% endblock %}

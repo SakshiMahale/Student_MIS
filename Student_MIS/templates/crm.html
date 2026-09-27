@@ -1,0 +1,63 @@
+{% extends 'base.html' %}
+{% block title %}CRM{% endblock %}
+{% block page_title %}CRM — Communications{% endblock %}
+{% block content %}
+<div style="margin-bottom:24px;">
+    <h1 style="font-size:1.3rem; font-weight:700; margin-bottom:4px;">Student Relationship Management</h1>
+    <p style="color:var(--muted); font-size:0.82rem;">Log and track all student communications, notices, and follow-ups</p>
+</div>
+
+<div style="display:grid; grid-template-columns:360px 1fr; gap:20px;">
+    <!-- Send Communication -->
+    <div class="card" style="padding:22px; align-self:start;">
+        <div class="card-header-custom" style="padding:0 0 16px;"><i class="bi bi-send" style="color:var(--success);"></i> New Communication</div>
+        <form method="POST" action="{{ url_for('crm_communicate') }}">
+            <div style="margin-bottom:12px;">
+                <label class="form-label-custom">Student</label>
+                <select name="student_id" class="form-input" required>
+                    <option value="">— Select student —</option>
+                    {% for s in students %}
+                    <option value="{{ s.id }}">{{ s.name }} ({{ s.category }})</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div style="margin-bottom:12px;">
+                <label class="form-label-custom">Channel</label>
+                <select name="type" class="form-input">
+                    <option>Email</option><option>SMS</option><option>Notice</option><option>Call</option>
+                </select>
+            </div>
+            <div style="margin-bottom:16px;">
+                <label class="form-label-custom">Message</label>
+                <textarea name="message" class="form-input" rows="4" placeholder="Enter message…" required style="resize:vertical;"></textarea>
+            </div>
+            <button type="submit" class="btn-accent" style="width:100%;"><i class="bi bi-send me-1"></i>Log Communication</button>
+        </form>
+    </div>
+
+    <!-- Log -->
+    <div class="card">
+        <div class="card-header-custom"><i class="bi bi-clock-history" style="color:var(--muted);"></i> Communication History</div>
+        <table class="mis-table">
+            <thead><tr><th>Date</th><th>Student</th><th>Channel</th><th>Message</th><th>Status</th></tr></thead>
+            <tbody>
+            {% for c in communications %}
+            <tr>
+                <td style="font-size:0.75rem; color:var(--muted); font-family:'JetBrains Mono',monospace; white-space:nowrap;">{{ c.sent_on.strftime('%d %b %H:%M') }}</td>
+                <td><a href="{{ url_for('student_detail', id=c.student_id) }}" style="color:var(--text); font-weight:500; text-decoration:none;">{{ c.student.name }}</a></td>
+                <td>
+                    <span style="font-size:0.72rem; padding:2px 8px; border-radius:5px;
+                      background:{% if c.comm_type == 'Email' %}rgba(108,99,255,0.12){% elif c.comm_type == 'SMS' %}rgba(0,212,170,0.1){% else %}rgba(255,178,54,0.1){% endif %};
+                      color:{% if c.comm_type == 'Email' %}var(--accent){% elif c.comm_type == 'SMS' %}var(--accent2){% else %}var(--warning){% endif %};">{{ c.comm_type }}</span>
+                </td>
+               <td style="font-size:0.82rem; max-width:260px; color:var(--text);">{{ c.message[:80] }}{% if c.message | length > 80 %}…{% endif %}</td>
+                <td><span style="color:var(--success); font-size:0.75rem;">● {{ c.status }}</span></td>
+            </tr>
+            {% else %}
+            <tr><td colspan="5" style="text-align:center; color:var(--muted); padding:40px;">No communications yet.</td></tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,106 @@
+{% extends 'base.html' %}
+{% block title %}{{ student.name }}{% endblock %}
+{% block page_title %}Student Profile{% endblock %}
+{% block content %}
+<div style="display:grid; grid-template-columns:280px 1fr; gap:20px;">
+
+    <!-- Left: Profile Card -->
+    <div>
+        <div class="card" style="padding:24px; text-align:center; margin-bottom:16px;">
+            <div style="width:72px; height:72px; border-radius:50%; background:var(--accent); display:flex; align-items:center; justify-content:center; font-size:1.8rem; font-weight:700; margin:0 auto 16px; color:#fff;">
+                {{ student.name[0] }}
+            </div>
+            <div style="font-size:1.1rem; font-weight:700; margin-bottom:4px; color:var(--text);">{{ student.name }}</div>
+            <span class="badge-cat {{ student.category | replace(' ', '-') }}" style="font-size:0.8rem; padding:4px 14px;">{{ student.category }}</span>
+            {% if student.email %}<div style="font-size:0.78rem; color:var(--muted); margin-top:12px;">{{ student.email }}</div>{% endif %}
+            {% if student.phone %}<div style="font-size:0.78rem; color:var(--muted);">{{ student.phone }}</div>{% endif %}
+            <div style="font-size:0.75rem; color:var(--muted); margin-top:8px;">Enrolled: {{ student.enrolled_date.strftime('%d %b %Y') if student.enrolled_date else '—' }}</div>
+        </div>
+        <div class="card" style="padding:20px;">
+            <div style="font-size:0.7rem; color:var(--muted); text-transform:uppercase; letter-spacing:1px; margin-bottom:12px;">Performance</div>
+            <div style="display:flex; justify-content:space-between; margin-bottom:10px;">
+                <span style="font-size:0.82rem; color:var(--muted);">Marks</span>
+                <span style="font-family:'JetBrains Mono',monospace; font-weight:700;
+                  color:{% if student.marks >= 75 %}var(--success){% elif student.marks >= 50 %}var(--warning){% else %}var(--danger){% endif %};">{{ student.marks }}%</span>
+            </div>
+            <div style="display:flex; justify-content:space-between; margin-bottom:10px;">
+                <span style="font-size:0.82rem; color:var(--muted);">Attendance</span>
+                <span style="font-family:'JetBrains Mono',monospace; font-weight:700;
+                  color:{% if student.attendance >= 80 %}var(--success){% elif student.attendance >= 60 %}var(--warning){% else %}var(--danger){% endif %};">{{ student.attendance }}%</span>
+            </div>
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+                <span style="font-size:0.82rem; color:var(--muted);">Risk Score</span>
+                <div style="display:flex; align-items:center; gap:6px;">
+                    <div class="risk-bar" style="width:60px;"><div class="risk-fill" style="width:{{ student.risk_score }}%;
+                      background:{% if student.risk_score > 60 %}var(--danger){% elif student.risk_score > 30 %}var(--warning){% else %}var(--success){% endif %};"></div></div>
+                    <span style="font-size:0.75rem; font-family:'JetBrains Mono',monospace; color:var(--text);">{{ student.risk_score }}</span>
+                </div>
+            </div>
+        </div>
+        <div style="margin-top:12px; display:flex; gap:8px;">
+            <a href="{{ url_for('edit_student', id=student.id) }}" class="btn-accent" style="flex:1; text-align:center;"><i class="bi bi-pencil me-1"></i>Edit</a>
+        </div>
+    </div>
+
+    <!-- Right: Details -->
+    <div>
+        <!-- DSS Recommendations -->
+        <div class="card" style="margin-bottom:16px;">
+            <div class="card-header-custom"><i class="bi bi-lightbulb" style="color:var(--accent2);"></i> DSS Recommendations <span class="module-chip chip-dss" style="margin-left:auto;">DSS</span></div>
+            <div style="padding:16px;">
+                {% for rec in recommendations %}
+                <div style="display:flex; gap:12px; margin-bottom:12px; padding:12px; background:var(--surface2); border-radius:10px;
+                  border-left:3px solid {% if rec.type == 'urgent' %}var(--danger){% elif rec.type == 'warning' %}var(--warning){% elif rec.type == 'positive' %}var(--success){% else %}var(--accent){% endif %};">
+                    <i class="bi bi-{% if rec.type == 'urgent' %}exclamation-triangle{% elif rec.type == 'warning' %}exclamation-circle{% elif rec.type == 'positive' %}star{% else %}info-circle{% endif %}"
+                       style="color:{% if rec.type == 'urgent' %}var(--danger){% elif rec.type == 'warning' %}var(--warning){% elif rec.type == 'positive' %}var(--success){% else %}var(--accent){% endif %}; font-size:1.1rem; margin-top:1px;"></i>
+                    <div>
+                        <div style="font-size:0.83rem; font-weight:500; color:var(--text);">{{ rec.action }}</div>
+                        <div style="font-size:0.72rem; color:var(--muted); margin-top:2px;">Module: {{ rec.module }}</div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Enrolments (ERP) -->
+        <div class="card" style="margin-bottom:16px;">
+            <div class="card-header-custom"><i class="bi bi-layers" style="color:var(--warning);"></i> Course Enrolments <span class="module-chip chip-erp" style="margin-left:auto;">ERP</span></div>
+            <div style="padding:16px;">
+                {% if enrolments %}
+                    {% for e in enrolments %}
+                    <div style="display:flex; justify-content:space-between; padding:8px 0; border-bottom:1px solid var(--border);">
+                       <span style="font-size:0.83rem; color:var(--text);">{{ e.course.name }}</span>
+                        <span style="font-size:0.75rem; color:var(--muted);">{{ e.status }} · {{ e.enrolled_on.strftime('%d %b %Y') }}</span>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <p style="color:var(--muted); font-size:0.82rem;">Not enrolled in any course.</p>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Recent Communications (CRM) -->
+        <div class="card">
+            <div class="card-header-custom"><i class="bi bi-chat-dots" style="color:var(--success);"></i> Recent Communications <span class="module-chip chip-crm" style="margin-left:auto;">CRM</span></div>
+            <div style="padding:16px;">
+                {% if communications %}
+                    {% for c in communications %}
+                    <div style="padding:10px 0; border-bottom:1px solid var(--border);">
+                        <div style="display:flex; justify-content:space-between; margin-bottom:4px;">
+                            <span style="font-size:0.75rem; background:rgba(108,99,255,0.12); color:var(--accent); padding:1px 8px; border-radius:4px;">{{ c.comm_type }}</span>
+                            <span style="font-size:0.72rem; color:var(--muted);">{{ c.sent_on.strftime('%d %b %Y %H:%M') }}</span>
+                        </div>
+                        <p style="font-size:0.82rem; color:var(--text); margin:0;">{{ c.message }}</p>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <p style="color:var(--muted); font-size:0.82rem;">No communications logged yet.</p>
+                {% endif %}
+                <div style="margin-top:12px;">
+                    <a href="{{ url_for('crm') }}" class="btn-ghost" style="font-size:0.78rem;"><i class="bi bi-plus-lg me-1"></i>Send Communication</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

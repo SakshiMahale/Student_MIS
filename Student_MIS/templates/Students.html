@@ -1,0 +1,68 @@
+{% extends 'base.html' %}
+{% block title %}Students{% endblock %}
+{% block page_title %}Student Management{% endblock %}
+{% block content %}
+<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+    <div>
+        <h1 style="font-size:1.3rem; font-weight:700; margin-bottom:4px;">All Students</h1>
+        <p style="color:var(--muted); font-size:0.82rem;">Search, filter, and manage student records</p>
+    </div>
+    <a href="{{ url_for('add_student') }}" class="btn-accent"><i class="bi bi-plus-lg me-1"></i>Add Student</a>
+</div>
+
+<!-- Search & Filter -->
+<form method="GET" style="display:flex; gap:10px; margin-bottom:20px;">
+    <input type="text" name="q" value="{{ q }}" class="form-input" placeholder="Search by name…" style="max-width:280px;">
+    <select name="category" class="form-input" style="max-width:180px;">
+        <option value="">All Categories</option>
+        <option value="Excellent"  {% if selected_cat == 'Excellent'  %}selected{% endif %}>Excellent</option>
+        <option value="Average"    {% if selected_cat == 'Average'    %}selected{% endif %}>Average</option>
+        <option value="At Risk"    {% if selected_cat == 'At Risk'    %}selected{% endif %}>At Risk</option>
+        <option value="Invalid"    {% if selected_cat == 'Invalid'    %}selected{% endif %}>Invalid</option>
+    </select>
+    <button type="submit" class="btn-accent"><i class="bi bi-search"></i></button>
+    {% if q or selected_cat %}<a href="{{ url_for('students_list') }}" class="btn-ghost">Clear</a>{% endif %}
+</form>
+
+<div class="card">
+    <table class="mis-table">
+        <thead>
+            <tr><th>#</th><th>Name</th><th>Marks</th><th>Attendance</th><th>Category</th><th>Risk Score</th><th>Actions</th></tr>
+        </thead>
+        <tbody>
+        {% for s in students %}
+        <tr>
+            <td style="color:var(--muted); font-family:'JetBrains Mono',monospace; font-size:0.75rem;">{{ s.id }}</td>
+            <td>
+                <a href="{{ url_for('student_detail', id=s.id) }}" style="color:var(--text); font-weight:500; text-decoration:none;">{{ s.name }}</a>
+                {% if s.email %}<div style="font-size:0.7rem; color:var(--muted);">{{ s.email }}</div>{% endif %}
+            </td>
+            <td><span style="font-family:'JetBrains Mono',monospace; font-weight:600;
+              color:{% if s.marks >= 75 %}var(--success){% elif s.marks >= 50 %}var(--warning){% else %}var(--danger){% endif %};">{{ s.marks }}%</span></td>
+            <td><span style="font-family:'JetBrains Mono',monospace; font-weight:600;
+              color:{% if s.attendance >= 80 %}var(--success){% elif s.attendance >= 60 %}var(--warning){% else %}var(--danger){% endif %};">{{ s.attendance }}%</span></td>
+            <td><span class="badge-cat {{ s.category | replace(' ', '-') }}">{{ s.category }}</span></td>
+            <td>
+                <div style="display:flex; align-items:center; gap:8px;">
+                    <div class="risk-bar"><div class="risk-fill" style="width:{{ s.risk_score }}%;
+                      background:{% if s.risk_score > 60 %}var(--danger){% elif s.risk_score > 30 %}var(--warning){% else %}var(--success){% endif %};"></div></div>
+                    <span style="font-size:0.72rem; color:var(--muted); font-family:'JetBrains Mono',monospace;">{{ s.risk_score }}</span>
+                </div>
+            </td>
+            <td>
+                <div style="display:flex; gap:6px;">
+                    <a href="{{ url_for('student_detail', id=s.id) }}" class="btn-ghost" style="padding:5px 10px; font-size:0.75rem;" title="View"><i class="bi bi-eye"></i></a>
+                    <a href="{{ url_for('edit_student', id=s.id) }}" class="btn-ghost" style="padding:5px 10px; font-size:0.75rem;" title="Edit"><i class="bi bi-pencil"></i></a>
+                    <form method="POST" action="{{ url_for('delete_student', id=s.id) }}" style="display:inline;" onsubmit="return confirm('Remove student?');">
+                        <button class="btn-danger" style="padding:5px 10px;" title="Remove"><i class="bi bi-trash"></i></button>
+                    </form>
+                </div>
+            </td>
+        </tr>
+        {% else %}
+        <tr><td colspan="7" style="text-align:center; color:var(--muted); padding:40px;">No students match. <a href="{{ url_for('add_student') }}" style="color:var(--accent);">Add one</a>.</td></tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

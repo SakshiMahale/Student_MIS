@@ -1,0 +1,83 @@
+{% extends 'base.html' %}
+{% block title %}SCM{% endblock %}
+{% block page_title %}SCM — Academic Supply Chain{% endblock %}
+{% block content %}
+<div style="margin-bottom:24px;">
+    <h1 style="font-size:1.3rem; font-weight:700; margin-bottom:4px;">Academic Supply Chain Management</h1>
+    <p style="color:var(--muted); font-size:0.82rem;">Monitor course capacity, resource allocation, and enrolment flow</p>
+</div>
+
+<!-- Course Utilization -->
+<div class="card" style="margin-bottom:20px;">
+    <div class="card-header-custom"><i class="bi bi-graph-up" style="color:var(--danger);"></i> Course Capacity Utilization</div>
+    <div style="padding:20px;">
+        {% for item in course_util %}
+        <div style="margin-bottom:16px;">
+            <div style="display:flex; justify-content:space-between; margin-bottom:6px; align-items:center;">
+                <div>
+                   <span style="font-weight:600; font-size:0.87rem; color:var(--text);">{{ item.course.name }}</span>
+                    <span style="font-family:'JetBrains Mono',monospace; font-size:0.72rem; color:var(--muted); margin-left:8px;">{{ item.course.code }}</span>
+                </div>
+                <div style="font-size:0.82rem; color:var(--muted);">
+                    <span style="font-family:'JetBrains Mono',monospace; font-weight:700;
+                      color:{% if item.util_pct > 90 %}var(--danger){% elif item.util_pct > 70 %}var(--warning){% else %}var(--success){% endif %};">{{ item.enrolled }}</span>
+                    / {{ item.course.capacity }} seats
+                    <span style="margin-left:8px; font-size:0.72rem;">({{ item.util_pct }}%)</span>
+                </div>
+            </div>
+            <div style="background:var(--surface2); border-radius:4px; height:8px; overflow:hidden;">
+                <div style="height:100%; border-radius:4px; width:{{ item.util_pct }}%;
+                  background:{% if item.util_pct > 90 %}var(--danger){% elif item.util_pct > 70 %}var(--warning){% else %}var(--success){% endif %};
+                  transition: width 0.5s;"></div>
+            </div>
+        </div>
+        {% else %}
+        <p style="color:var(--muted); font-size:0.82rem; text-align:center; padding:20px;">No courses in system. Add via <a href="{{ url_for('erp_courses') }}" style="color:var(--accent);">ERP module</a>.</p>
+        {% endfor %}
+    </div>
+</div>
+
+<!-- Resource Status -->
+<div class="card" style="margin-bottom:20px;">
+    <div class="card-header-custom"><i class="bi bi-box2-heart" style="color:var(--accent2);"></i> Resource Supply Status</div>
+    <div style="padding:20px; display:grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap:14px;">
+        {% for r in resources %}
+        <div style="background:var(--surface2); border-radius:12px; padding:16px; border:1px solid var(--border);">
+            <div style="font-size:0.68rem; color:var(--muted); text-transform:uppercase; letter-spacing:1px; margin-bottom:4px;">{{ r.resource_type }}</div>
+            <div style="font-size:0.9rem; font-weight:600; margin-bottom:10px; color:var(--text);">{{ r.title }}</div>
+            {% set avail_pct = (r.available / r.quantity * 100) | round if r.quantity else 0 %}
+            <div style="background:var(--bg); border-radius:4px; height:6px; overflow:hidden; margin-bottom:8px;">
+                <div style="height:100%; width:{{ avail_pct }}%; border-radius:4px;
+                  background:{% if avail_pct < 20 %}var(--danger){% elif avail_pct < 50 %}var(--warning){% else %}var(--success){% endif %};"></div>
+            </div>
+            <div style="display:flex; justify-content:space-between; font-size:0.75rem; color:var(--muted);">
+                <span>{{ r.available }} available</span>
+                <span>{{ r.quantity }} total</span>
+            </div>
+        </div>
+        {% else %}
+        <p style="color:var(--muted); font-size:0.82rem;">No resources tracked.</p>
+        {% endfor %}
+    </div>
+</div>
+
+<!-- Enrolment Flow -->
+<div class="card">
+    <div class="card-header-custom"><i class="bi bi-arrow-left-right" style="color:var(--warning);"></i> Active Enrolments (Supply Chain Flow)</div>
+    <table class="mis-table">
+        <thead><tr><th>Student</th><th>Course</th><th>Status</th><th>Enrolled On</th></tr></thead>
+        <tbody>
+        {% for e in enrollments %}
+        <tr>
+            <td><a href="{{ url_for('student_detail', id=e.student_id) }}" style="color:var(--text); font-weight:500; text-decoration:none;">{{ e.student.name }}</a></td>
+           <td style="font-size:0.83rem; color:var(--text);">{{ e.course.name }}<span style="font-family:'JetBrains Mono',monospace; font-size:0.72rem; color:var(--muted);">({{ e.course.code }})</span></td>
+            <td><span style="color:var(--success); font-size:0.78rem;">● {{ e.status }}</span></td>
+            <td style="font-size:0.78rem; color:var(--muted); font-family:'JetBrains Mono',monospace;">{{ e.enrolled_on.strftime('%d %b %Y') }}</td>
+        </tr>
+        {% else %}
+        <tr><td colspan="4" style="text-align:center; color:var(--muted); padding:30px;">No enrolments yet. Add students and enrol them via <a href="{{ url_for('add_student') }}" style="color:var(--accent);">Add Student</a>.</td></tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

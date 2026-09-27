@@ -1,0 +1,71 @@
+{% extends 'base.html' %}
+{% block title %}DSS{% endblock %}
+{% block page_title %}Decision Support System (DSS){% endblock %}
+{% block content %}
+<div style="margin-bottom:24px; display:flex; justify-content:space-between; align-items:flex-start;">
+    <div>
+        <h1 style="font-size:1.3rem; font-weight:700; margin-bottom:4px;">Decision Support System</h1>
+        <p style="color:var(--muted); font-size:0.82rem;">AI-powered intervention recommendations & risk analytics</p>
+    </div>
+    <div style="background:rgba(255,91,91,0.12); border:1px solid rgba(255,91,91,0.3); border-radius:10px; padding:12px 20px; text-align:center;">
+        <div style="font-size:1.8rem; font-weight:700; color:var(--danger);">{{ at_risk_count }}</div>
+        <div style="font-size:0.72rem; color:var(--muted); text-transform:uppercase; letter-spacing:1px;">Students At Risk</div>
+    </div>
+</div>
+
+<!-- Intervention Recommendations -->
+{% if recommendations %}
+<div class="card" style="margin-bottom:24px;">
+    <div class="card-header-custom"><i class="bi bi-lightbulb" style="color:var(--accent2);"></i> Prioritized Interventions</div>
+    <table class="mis-table">
+        <thead><tr><th>Student</th><th>Priority</th><th>Recommended Action</th><th>Module</th><th></th></tr></thead>
+        <tbody>
+        {% for r in recommendations %}
+        <tr>
+            <td><a href="{{ url_for('student_detail', id=r.id) }}" style="color:var(--text); font-weight:500; text-decoration:none;">{{ r.student }}</a></td>
+            <td>
+                <span style="display:inline-flex; align-items:center; gap:5px; font-size:0.75rem; font-weight:600;
+                  color:{% if r.type == 'urgent' %}var(--danger){% elif r.type == 'warning' %}var(--warning){% else %}var(--success){% endif %};">
+                    <i class="bi bi-{% if r.type == 'urgent' %}exclamation-triangle-fill{% elif r.type == 'warning' %}exclamation-circle{% else %}check-circle{% endif %}"></i>
+                    {{ r.type | capitalize }}
+                </span>
+            </td>
+            <td style="font-size:0.83rem; color:var(--text);">{{ r.action }}</td>
+            <td><span class="module-chip chip-dss">{{ r.module }}</span></td>
+            <td><a href="{{ url_for('crm') }}" class="btn-ghost" style="padding:4px 10px; font-size:0.75rem;">Log Action</a></td>
+        </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endif %}
+
+<!-- Full Risk Rankings -->
+<div class="card">
+    <div class="card-header-custom"><i class="bi bi-sort-down" style="color:var(--accent);"></i> All Students — Risk Ranked</div>
+    <table class="mis-table">
+        <thead><tr><th>Rank</th><th>Student</th><th>Marks</th><th>Attendance</th><th>Category</th><th>Risk Score</th></tr></thead>
+        <tbody>
+        {% for s in students %}
+        <tr>
+            <td style="font-family:'JetBrains Mono',monospace; font-size:0.75rem; color:var(--muted);">{{ loop.index }}</td>
+            <td><a href="{{ url_for('student_detail', id=s.id) }}" style="color:var(--text); font-weight:500; text-decoration:none;">{{ s.name }}</a></td>
+            <td style="font-family:'JetBrains Mono',monospace;
+              color:{% if s.marks >= 75 %}var(--success){% elif s.marks >= 50 %}var(--warning){% else %}var(--danger){% endif %};">{{ s.marks }}%</td>
+            <td style="font-family:'JetBrains Mono',monospace;
+              color:{% if s.attendance >= 80 %}var(--success){% elif s.attendance >= 60 %}var(--warning){% else %}var(--danger){% endif %};">{{ s.attendance }}%</td>
+            <td><span class="badge-cat {{ s.category | replace(' ', '-') }}">{{ s.category }}</span></td>
+            <td>
+                <div style="display:flex; align-items:center; gap:8px;">
+                    <div class="risk-bar" style="width:100px;"><div class="risk-fill" style="width:{{ s.risk_score }}%;
+                      background:{% if s.risk_score > 60 %}var(--danger){% elif s.risk_score > 30 %}var(--warning){% else %}var(--success){% endif %};"></div></div>
+                    <span style="font-size:0.78rem; font-family:'JetBrains Mono',monospace; font-weight:600;
+                      color:{% if s.risk_score > 60 %}var(--danger){% elif s.risk_score > 30 %}var(--warning){% else %}var(--success){% endif %};">{{ s.risk_score }}</span>
+                </div>
+            </td>
+        </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

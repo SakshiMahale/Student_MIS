@@ -1,0 +1,41 @@
+{% extends 'base.html' %}
+{% block title %}Edit Student{% endblock %}
+{% block page_title %}Edit Student{% endblock %}
+{% block content %}
+<div style="max-width:600px; margin:0 auto;">
+    <div style="margin-bottom:20px;">
+        <h1 style="font-size:1.3rem; font-weight:700; margin-bottom:4px;">Edit: {{ student.name }}</h1>
+        <p style="color:var(--muted); font-size:0.82rem;">Changes will recalculate category and risk score automatically</p>
+    </div>
+    <div class="card" style="padding:28px;">
+        <form method="POST">
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:16px;">
+                <div style="grid-column:1/-1;">
+                    <label class="form-label-custom">Full Name *</label>
+                    <input type="text" name="name" class="form-input" value="{{ student.name }}" required>
+                </div>
+                <div>
+                    <label class="form-label-custom">Marks (0–100) *</label>
+                    <input type="number" name="marks" class="form-input" min="0" max="100" step="0.1" value="{{ student.marks }}" required>
+                </div>
+                <div>
+                    <label class="form-label-custom">Attendance % (0–100) *</label>
+                    <input type="number" name="attendance" class="form-input" min="0" max="100" step="0.1" value="{{ student.attendance }}" required>
+                </div>
+                <div>
+                    <label class="form-label-custom">Email</label>
+                    <input type="email" name="email" class="form-input" value="{{ student.email or '' }}">
+                </div>
+                <div>
+                    <label class="form-label-custom">Phone</label>
+                    <input type="text" name="phone" class="form-input" value="{{ student.phone or '' }}">
+                </div>
+            </div>
+            <div style="display:flex; gap:10px;">
+                <button type="submit" class="btn-accent"><i class="bi bi-check-lg me-1"></i>Update Student</button>
+                <a href="{{ url_for('student_detail', id=student.id) }}" class="btn-ghost">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
